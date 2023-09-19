@@ -30,18 +30,36 @@ let package = Package(
             .upToNextMajor(from: "5.6.1")),
         .package(url: "https://github.com/marmelroy/PhoneNumberKit",
             .upToNextMajor(from: "3.4.0")),
+        .package(url: "https://github.com/airbnb/lottie-spm.git",
+            .upToNextMajor(from: "4.2.0")),
+        .package(url: "https://github.com/kean/Nuke.git",
+            .upToNextMajor(from: "11.0.0")),
     ],
     targets: [
-        .target(name: "DataLayer",
-                dependencies: [
-                    .byName(name: "Alamofire"),
-                ]),
-        .target(name: "PhoneHelper",
-                dependencies: [
-                    .byName(name: "PhoneNumberKit"),
-                ]),
-        .target(name: "UnderlyingViewForSwiftUI"),
+        .target(
+            name: "DataLayer",
+            dependencies: [
+                .byName(name: "Alamofire"),
+            ]
+        ),
+        .target(
+            name: "PhoneHelper",
+            dependencies: [
+                .byName(name: "PhoneNumberKit"),
+            ]
+        ),
+        .target(
+            name: "UnderlyingViewForSwiftUI",
+            dependencies: [
+                .product(name: "Lottie", package: "lottie-spm")
+            ]
+        ),
         .target(name: "SwiftUtilities"),
-        .target(name: "ViewExtensionForSwiftUI"),
+        .target(
+            name: "ViewExtensionForSwiftUI",
+            dependencies: [
+                .product(name: "NukeUI", package: "Nuke")
+            ]
+        ),
     ]
 )
