@@ -9,22 +9,29 @@ import Foundation
 import SwiftUI
 
 public struct CompositionalCollectionView<Section: Hashable, Item: Hashable>: UIViewControllerRepresentable {
-    public init(shouldReload: Binding<Bool> = .constant(false),
-                  direction: Binding<GenericScrollDirection> = .constant(.up),
-                  layout: UICollectionViewLayout,
-                  sections: @escaping () -> [Section],
-                  items: @escaping () -> [Section: [Item]],
-                  extraSetting: @escaping (UICollectionView) -> Void,
-                  cellProvider: @escaping ((UICollectionView, IndexPath, Item) -> UICollectionViewCell?),
-                  buildHeader: ((UICollectionView, IndexPath, Section) -> UICollectionReusableView?)? = nil,
-                  buildFooter: ((UICollectionView, IndexPath, Section) -> UICollectionReusableView?)? = nil,
-                  didSelectItem: ((UICollectionView, IndexPath, Section, Item) -> Void)? = nil,
-                  onRefresh: (() async -> Void)? = nil,
-                  onReachEnd: (() async -> Void)? = nil,
-                  willDisplay: ((UICollectionView, UICollectionViewCell, IndexPath) -> Void)? = nil,
-                  didEndDisplay: ((UICollectionView, UICollectionViewCell, IndexPath) -> Void)? = nil) {
+    public init(
+        shouldReload: Binding<Bool> = .constant(false),
+        direction: Binding<GenericScrollDirection> = .constant(.up),
+        contentOffset: Binding<CGPoint> = .constant(.zero),
+        layout: UICollectionViewLayout,
+        sections: @escaping () -> [Section],
+        items: @escaping () -> [Section: [Item]],
+        extraSetting: @escaping (UICollectionView) -> Void,
+        cellProvider: @escaping ((UICollectionView, IndexPath, Item) -> UICollectionViewCell?),
+        buildHeader: ((UICollectionView, IndexPath, Section) -> UICollectionReusableView?)? = nil,
+        buildFooter: ((UICollectionView, IndexPath, Section) -> UICollectionReusableView?)? = nil,
+        didSelectItem: ((UICollectionView, IndexPath, Section, Item) -> Void)? = nil,
+        onRefresh: (() async -> Void)? = nil,
+        onReachEnd: (() async -> Void)? = nil,
+        onOverScroll: (() async -> Void)? = nil,
+        willDisplay: ((UICollectionView, UICollectionViewCell, IndexPath) -> Void)? = nil,
+        didEndDisplay: ((UICollectionView, UICollectionViewCell, IndexPath) -> Void)? = nil,
+        didChangeScrollDirection: ((GenericScrollDirection) -> Void)? = nil,
+        didChangeContentOffset: ((CGPoint) -> Void)? = nil
+    ) {
         self._shouldReload = shouldReload
         self._direction = direction
+        self._contentOffset = contentOffset
         self.layout = layout
         self.sections = sections
         self.items = items
@@ -34,9 +41,12 @@ public struct CompositionalCollectionView<Section: Hashable, Item: Hashable>: UI
         self.buildFooter = buildFooter
         self.didSelectItem = didSelectItem
         self.onRefresh = onRefresh
+        self.onOverScroll = onOverScroll
         self.onReachEnd = onReachEnd
         self.willDisplay = willDisplay
         self.didEndDisplay = didEndDisplay
+        self.didChangeContentOffset = didChangeContentOffset
+        self.didChangeScrollDirection = didChangeScrollDirection
     }
     
     @Binding
@@ -44,6 +54,9 @@ public struct CompositionalCollectionView<Section: Hashable, Item: Hashable>: UI
     
     @Binding
     private var direction: GenericScrollDirection
+
+    @Binding
+    private var contentOffset: CGPoint
 
     private let layout: UICollectionViewLayout
     private let sections: () -> [Section]
@@ -55,13 +68,15 @@ public struct CompositionalCollectionView<Section: Hashable, Item: Hashable>: UI
     private var buildFooter: ((UICollectionView, IndexPath, Section) -> UICollectionReusableView?)?
 
     private var didSelectItem: ((UICollectionView, IndexPath, Section, Item) -> Void)?
-    private var onRefresh: (() async -> Void)?
-    private var onReachEnd: (() async -> Void)?
     private var willDisplay: ((UICollectionView, UICollectionViewCell, IndexPath ) -> Void)?
     private var didEndDisplay: ((UICollectionView, UICollectionViewCell, IndexPath ) -> Void)?
+    private var onRefresh: (() async -> Void)?
+    private var onReachEnd: (() async -> Void)?
+    private var onOverScroll: (() async -> Void)?
+    private var didChangeScrollDirection: ((GenericScrollDirection) -> Void)?
+    private var didChangeContentOffset: ((CGPoint) -> Void)?
 
     public func makeUIViewController(context: Context) -> CompositionalCollectionViewController<Section, Item> {
-
         let snapshotForCurrentState = {
             var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
 
@@ -83,15 +98,21 @@ public struct CompositionalCollectionView<Section: Hashable, Item: Hashable>: UI
         
         controller.onChangeScrollDirection = { direction in
             self.direction = direction
+            self.didChangeScrollDirection?(direction)
         }
         
         controller.buildHeader = buildHeader
         controller.buildFooter = buildFooter
         controller.onRefresh = onRefresh
         controller.onReachEnd = onReachEnd
+        controller.onOverScroll = onOverScroll
         controller.willDisplay = willDisplay
         controller.didEndDisplay = didEndDisplay
         controller.didSelectItem = didSelectItem
+        controller.onChangeContentOffset = {
+            self.contentOffset = $0
+            self.didChangeContentOffset?($0)
+        }
 
         return controller
     }
@@ -107,9 +128,11 @@ public struct CompositionalCollectionView<Section: Hashable, Item: Hashable>: UI
 }
 
 public class CompositionalCollectionViewController<Section, Item>: UICollectionViewController, UICollectionViewDataSourcePrefetching where Section: Hashable, Item: Hashable {
-    public init(layout: UICollectionViewLayout,
-                snapshotForCurrentState: @escaping (() -> NSDiffableDataSourceSnapshot<Section, Item>),
-                cellProvider: @escaping ((UICollectionView, IndexPath, Item) -> UICollectionViewCell?)) {
+    public init(
+        layout: UICollectionViewLayout,
+        snapshotForCurrentState: @escaping (() -> NSDiffableDataSourceSnapshot<Section, Item>),
+        cellProvider: @escaping ((UICollectionView, IndexPath, Item) -> UICollectionViewCell?)
+    ) {
         self.snapshotForCurrentState = snapshotForCurrentState
         self.cellProvider = cellProvider
         super.init(collectionViewLayout: layout)
@@ -128,17 +151,22 @@ public class CompositionalCollectionViewController<Section, Item>: UICollectionV
     public var didSelectItem: ((UICollectionView, IndexPath, Section, Item) -> Void)?
     public var onRefresh: (() async -> Void)?
     public var onReachEnd: (() async -> Void)?
+    public var onOverScroll: (() async -> Void)?
     public var willDisplay: ((UICollectionView, UICollectionViewCell, IndexPath) -> Void)?
     public var didEndDisplay: ((UICollectionView, UICollectionViewCell, IndexPath) -> Void)?
     public var onChangeScrollDirection: ((GenericScrollDirection) -> Void)?
+    public var onChangeContentOffset: ((CGPoint) -> Void)?
 
     private var isLoadingMore = false
+    private var isOverScrolling = false
     private lazy var thisRefreshControl = UIRefreshControl()
     private var defaultOffset: CGPoint?
 
     lazy var dataSource: (UICollectionViewDiffableDataSource<Section, Item>)? = {
-        let dataSource = UICollectionViewDiffableDataSource<Section, Item>(collectionView: collectionView,
-                                                                           cellProvider: cellProvider)
+        let dataSource = UICollectionViewDiffableDataSource<Section, Item>(
+            collectionView: collectionView,
+            cellProvider: cellProvider
+        )
         return dataSource
     }()
     
@@ -173,11 +201,21 @@ public class CompositionalCollectionViewController<Section, Item>: UICollectionV
     }
     
     public func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
-        if indexPaths.map({ $0.item }).contains(collectionView.numberOfItems(inSection: collectionView.numberOfSections - 1) - 5) && !isLoadingMore {
-            Task {
-                isLoadingMore = true
-                await onReachEnd?()
-                isLoadingMore = false
+        if collectionView.numberOfSections == 1 {
+            if indexPaths.map({ $0.item }).contains(collectionView.numberOfItems(inSection: collectionView.numberOfSections - 1) - 5) && !isLoadingMore {
+                Task {
+                    isLoadingMore = true
+                    await onReachEnd?()
+                    isLoadingMore = false
+                }
+            }
+        } else {
+            if indexPaths.map({ $0.section }).contains(collectionView.numberOfSections - 1) && !isLoadingMore {
+                Task {
+                    isLoadingMore = true
+                    await onReachEnd?()
+                    isLoadingMore = false
+                }
             }
         }
     }
@@ -204,12 +242,23 @@ public class CompositionalCollectionViewController<Section, Item>: UICollectionV
     }
     
     public override func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        if scrollView.contentOffset.y >= (scrollView.contentSize.height - scrollView.frame.size.height) {
+            if !isOverScrolling {
+                Task {
+                    isOverScrolling = true
+                    await onOverScroll?()
+                    isOverScrolling = false
+                }
+            }
+        }
+
         guard let defaultOffset = defaultOffset else {
             return
         }
         
         let currentOffset = scrollView.contentOffset
-                
+        onChangeContentOffset?(currentOffset)
+
         if currentOffset.y + scrollView.height >= scrollView.contentSize.height {
             return
         }

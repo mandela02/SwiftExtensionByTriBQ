@@ -301,3 +301,38 @@ public extension String {
          return size.width
      }
 }
+
+public extension String {
+    func trim() -> String {
+        let trimmed = self.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed
+    }
+
+    func removingWhitespaces() -> String {
+        return components(separatedBy: .whitespaces).joined()
+    }
+
+    var dateFromHourMinute: Date {
+        var dateFormatter = DateFormatter(dateFormat: "HH:mm")
+        dateFormatter.locale = .usLocale
+        let date = dateFormatter.date(from: self)
+        return date ?? Date()
+    }
+
+    var asCGFloat: CGFloat {
+        return CGFloat(self.asDouble)
+    }
+
+    var flag: String {
+        let base: UInt32 = 127397
+        var s = ""
+        for v in self.unicodeScalars {
+            s.unicodeScalars.append(UnicodeScalar(base + v.value)!)
+        }
+        return String(s)
+    }
+
+    var isNotEmpty: Bool {
+        return !isEmpty
+    }
+}

@@ -46,7 +46,7 @@ public struct PhoneHelper {
         }
     }
 
-    func getPhoneNumber(from number: String) -> String {
+    public func getPhoneNumber(from number: String) -> String {
         do {
             let phoneNumber = try phoneNumberKit.parse(number, ignoreType: true)
             return phoneNumberKit.format(phoneNumber, toType: .national)

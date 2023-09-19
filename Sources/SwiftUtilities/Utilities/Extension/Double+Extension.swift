@@ -8,10 +8,6 @@
 import Foundation
 
 public extension Double {
-    private var usLocale: Locale {
-        Locale(identifier: "en_US")
-    }
-
     /// Convert a double to a string
     var asString: String { "\(self)" }
 
@@ -21,7 +17,7 @@ public extension Double {
     /// Format a double as a location specific currency
     var asCurrency: String? {
         let formatter = NumberFormatter()
-        formatter.locale = usLocale
+        formatter.locale = .usLocale
         formatter.numberStyle = .currency
         return formatter.string(from: self as NSNumber)
     }

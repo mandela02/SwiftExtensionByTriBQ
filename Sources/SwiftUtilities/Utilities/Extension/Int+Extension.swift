@@ -24,3 +24,29 @@ public extension Int {
     /// Convert an integer to a bool
     var asBool: Bool { self == 1 }
 }
+
+public extension Int {
+    var usd: String {
+        let currencyFormatter = NumberFormatter()
+        currencyFormatter.usesGroupingSeparator = true
+        currencyFormatter.numberStyle = .currency
+        currencyFormatter.locale = Locale(identifier: "en_US")
+
+        // We'll force unwrap with the !, if you've got defined data you may need more error checking
+
+        let priceString = currencyFormatter.string(from: NSNumber(value: self))
+        return priceString ?? ""
+    }
+
+    var nilIfZero: Int? {
+        self == 0 ? nil : self
+    }
+
+    var isOneDigit: Bool {
+        return self >= 0 && self < 10
+    }
+}
+
+extension Int: Identifiable {
+    public var id: Int { self }
+}

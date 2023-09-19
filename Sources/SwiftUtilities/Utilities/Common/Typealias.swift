@@ -10,5 +10,6 @@ import Foundation
 public typealias VoidCallback = () -> Void
 public typealias AsyncVoidCallback = () async -> Void
 public typealias AsyncThrowVoidCallback = () async throws -> Void
-public typealias AsyncThrowValueCallback<T> = (T) async throws -> Void
-public typealias OnValueChange<T> = (T) -> Void
+public typealias OnValueChangeCallback<T> = (T) -> Void
+public typealias OnValueChangeAsyncCallback<T> = (T) async -> Void
+public typealias OnValueChangeAsyncThrowCallback<T> = (T) async throws -> Void
