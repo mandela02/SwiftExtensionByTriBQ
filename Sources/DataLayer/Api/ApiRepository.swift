@@ -432,7 +432,7 @@ extension ApiRepository {
     func createUrl(from path: String, params: [String: any Codable] = [:]) throws -> URL {
         var components: URLComponents?
 
-        if scheme.isEmpty {
+        if endPoint.isEmpty {
             components = URLComponents(string: path)
         } else {
             components = URLComponents()
