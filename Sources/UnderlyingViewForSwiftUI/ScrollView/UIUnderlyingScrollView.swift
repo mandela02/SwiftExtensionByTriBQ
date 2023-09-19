@@ -17,23 +17,23 @@ public struct UnderlyingScrollView<Content: View>: UIViewControllerRepresentable
     private var content: () -> Content
     private var axis: DirectionX
     private var hideScrollIndicators: Bool
-    private let onRefresh: (() async -> Void)?
     private let onReachBottom: (() -> Void)?
     
     @Binding
     private var shouldScrollToBottom: Bool
-    
+
+    @Environment(\.refresh)
+    private var action
+
     public init(axis: DirectionX = .vertical,
                 hideScrollIndicators: Bool = false,
                 shouldScrollToBottom: Binding<Bool> = .constant(false),
-                onRefresh: (() async -> Void)? = nil,
                 onReachBottom: (() -> Void)? = nil,
                 @ViewBuilder content: @escaping () -> Content) {
         
         self.content = content
         self.hideScrollIndicators = hideScrollIndicators
         self.axis = axis
-        self.onRefresh = onRefresh
         self._shouldScrollToBottom = shouldScrollToBottom
         self.onReachBottom = onReachBottom
     }
@@ -42,7 +42,15 @@ public struct UnderlyingScrollView<Content: View>: UIViewControllerRepresentable
         let vc = UIScrollViewController(rootView: self.content())
         vc.axis = axis
         vc.hideScrollIndicators = hideScrollIndicators
-        vc.hideRefreshControl = onRefresh == nil
+        vc.hideRefreshControl = action == nil
+        vc.onRefreshing = {
+            { control in
+                Task { @MainActor in
+                    await action?()
+                    control.endRefreshing()
+                }
+            }
+        }()
         vc.delegate = context.coordinator
         return vc
     }
@@ -59,17 +67,13 @@ public struct UnderlyingScrollView<Content: View>: UIViewControllerRepresentable
     }
     
     public func makeCoordinator() -> Coordinator {
-        return Coordinator(onRefresh: onRefresh,
-                           onReachBottom: onReachBottom)
+        return Coordinator(onReachBottom: onReachBottom)
     }
     
     public class Coordinator: NSObject, LegacyScrollViewDelegate {
-        let onRefresh: (() async -> Void)?
         let onReachBottom: (() -> Void)?
         
-        internal init(onRefresh: (() async -> Void)?,
-                      onReachBottom: (() -> Void)?) {
-            self.onRefresh = onRefresh
+        internal init(onReachBottom: (() -> Void)?) {
             self.onReachBottom = onReachBottom
         }
         
@@ -84,18 +88,10 @@ public struct UnderlyingScrollView<Content: View>: UIViewControllerRepresentable
         func scrolling() {
             print("scrolling")
         }
-        
-        func didRefresh(sender: UIRefreshControl) {
-            Task { @MainActor in
-                await onRefresh?()
-                sender.endRefreshing()
-            }
-        }
     }
 }
 
 protocol LegacyScrollViewDelegate: AnyObject {
-    func didRefresh(sender: UIRefreshControl)
     func didReachBottom()
     func didReachTop()
     func scrolling()
@@ -106,7 +102,8 @@ public class UIScrollViewController<Content: View>: UIViewController, UIScrollVi
     var hideRefreshControl: Bool = false
     var hideScrollIndicators: Bool = false
     weak var delegate: LegacyScrollViewDelegate?
-    
+    var onRefreshing: ((UIRefreshControl) -> Void)?
+
     lazy var scrollView: UIScrollView = {
         let view = UIScrollView()
         view.delegate = self
@@ -169,7 +166,7 @@ public class UIScrollViewController<Content: View>: UIViewController, UIScrollVi
     }
     
     @objc func handleRefreshControl(sender: UIRefreshControl) {
-        delegate?.didRefresh(sender: sender)
+        onRefreshing?(sender)
     }
     
     public func scrollViewDidScroll(_ scrollView: UIScrollView) {

@@ -32,7 +32,7 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
                                            needAuthToken: needAuthToken)
         do {
             let result = try await URLSession.shared.data(for: request)
-            Logger.log(data: result.0, response: result.1, error: nil)
+            DADebugLogger.log(data: result.0, response: result.1, error: nil)
 
             let response = result.1
             let data = result.0
@@ -42,7 +42,7 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
             let decodedObject: T = try decode(from: data)
             return decodedObject
         } catch let error {
-            Logger.log(data: nil, response: nil, error: error)
+            DADebugLogger.log(data: nil, response: nil, error: error)
 
             if error is CustomError {
                 throw error
@@ -66,7 +66,7 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
                                            needAuthToken: needAuthToken)
         do {
             let result = try await URLSession.shared.data(for: request)
-            Logger.log(data: result.0, response: result.1, error: nil)
+            DADebugLogger.log(data: result.0, response: result.1, error: nil)
 
             let response = result.1
             let data = result.0
@@ -76,7 +76,7 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
             let decodedObject: [T] = try decode(from: data)
             return decodedObject
         } catch let error {
-            Logger.log(data: nil, response: nil, error: error)
+            DADebugLogger.log(data: nil, response: nil, error: error)
             if error is CustomError {
                 throw error
             } else {
@@ -99,7 +99,7 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
                                             needAuthToken: needAuthToken)
         do {
             let result = try await URLSession.shared.data(for: request)
-            Logger.log(data: result.0, response: result.1, error: nil)
+            DADebugLogger.log(data: result.0, response: result.1, error: nil)
 
             let response = result.1
             let data = result.0
@@ -109,7 +109,7 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
             let decodedObject: T = try decode(from: data)
             return decodedObject
         } catch let error {
-            Logger.log(data: nil, response: nil, error: error)
+            DADebugLogger.log(data: nil, response: nil, error: error)
             if error is CustomError {
                 throw error
             } else {
@@ -132,7 +132,7 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
                                             needAuthToken: needAuthToken)
         do {
             let result = try await URLSession.shared.data(for: request)
-            Logger.log(data: result.0, response: result.1, error: nil)
+            DADebugLogger.log(data: result.0, response: result.1, error: nil)
             
             let response = result.1
             let data = result.0
@@ -142,7 +142,7 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
             let decodedObject: T = try decode(from: data)
             return decodedObject
         } catch let error {
-            Logger.log(data: nil, response: nil, error: error)
+            DADebugLogger.log(data: nil, response: nil, error: error)
 
             if error is CustomError {
                 throw error
@@ -166,7 +166,7 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
                                             needAuthToken: needAuthToken)
         do {
             let result = try await URLSession.shared.data(for: request)
-            Logger.log(data: result.0, response: result.1, error: nil)
+            DADebugLogger.log(data: result.0, response: result.1, error: nil)
 
             let response = result.1
             let data = result.0
@@ -176,7 +176,7 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
             let decodedObject: T = try decode(from: data)
             return decodedObject
         } catch let error {
-            Logger.log(data: nil, response: nil, error: error)
+            DADebugLogger.log(data: nil, response: nil, error: error)
             if error is CustomError {
                 throw error
             } else {
@@ -197,7 +197,7 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
         
         do {
             let result = try await URLSession.shared.data(for: request)
-            Logger.log(data: result.0, response: result.1, error: nil)
+            DADebugLogger.log(data: result.0, response: result.1, error: nil)
 
             let response = result.1
             let data = result.0
@@ -207,7 +207,7 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
             let decodedObject: T = try decode(from: data)
             return decodedObject
         } catch let error {
-            Logger.log(data: nil, response: nil, error: error)
+            DADebugLogger.log(data: nil, response: nil, error: error)
             if error is CustomError {
                 throw error
             } else {
@@ -259,7 +259,7 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
                         return
                     }
                     if let request = afResponse.request {
-                        Logger.log(request: request)
+                        DADebugLogger.log(request: request)
                     }
 
                     guard let response = afResponse.response else {
@@ -268,7 +268,7 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
                     }
 
                     if let error = afResponse.error {
-                        Logger.log(data: nil, response: nil, error: error)
+                        DADebugLogger.log(data: nil, response: nil, error: error)
                         continuation.resume(throwing: CustomError.customError(error.localizedDescription))
                         return
                     }
@@ -278,7 +278,7 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
                         return
                     }
                     
-                    Logger.log(data: data, response: response, error: nil)
+                    DADebugLogger.log(data: data, response: response, error: nil)
 
                     do {
                         try self.handleStatusCode(from: response)
@@ -358,7 +358,7 @@ extension ApiRepository {
                 request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
             }
         }
-        Logger.log(request: request)
+        DADebugLogger.log(request: request)
         // Return the result
         return request
     }
@@ -397,7 +397,7 @@ extension ApiRepository {
                 request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
             }
         }
-        Logger.log(request: request)
+        DADebugLogger.log(request: request)
         // Return the result
         return request
     }
@@ -430,7 +430,7 @@ extension ApiRepository {
             }
         }
         
-        Logger.log(request: request)
+        DADebugLogger.log(request: request)
         // Return the result
         return request
     }
