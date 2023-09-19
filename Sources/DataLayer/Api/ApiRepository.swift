@@ -6,8 +6,6 @@
 //
 
 import Foundation
-
-import Foundation
 import Alamofire
 
 public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
@@ -15,13 +13,15 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
     
     private let scheme: String = "https"
     
-    public init(_ endPoint: String) {
+    public init(_ endPoint: String = "") {
         self.endPoint = endPoint
     }
     
-    public func fetchItem(path: String,
-                          param: [String: any Codable],
-                          needAuthToken: Bool = true) async throws -> T {
+    public func fetchItem(
+        path: String,
+        param: [String: any Codable],
+        needAuthToken: Bool = true
+    ) async throws -> T {
         guard Connectivity.isConnectedToInternet else {
             throw CustomError.noInternet
         }
@@ -52,10 +52,12 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
         }
     }
     
-    public func fetchItems(path: String,
-                           param: [String: any Codable],
-                           needAuthToken: Bool = true) async throws -> [T] {
-        
+    public func fetchItems(
+        path: String,
+        param: [String: any Codable],
+        needAuthToken: Bool = true
+    ) async throws -> [T] {
+
         guard Connectivity.isConnectedToInternet else {
             throw CustomError.noInternet
         }
@@ -85,10 +87,12 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
         }
     }
     
-    public func postItem(path: String,
-                         parameters: [String: any Codable],
-                         needAuthToken: Bool = true) async throws -> T {
-        
+    public func postItem(
+        path: String,
+        parameters: [String: any Codable],
+        needAuthToken: Bool = true
+    ) async throws -> T {
+
         guard Connectivity.isConnectedToInternet else {
             throw CustomError.noInternet
         }
@@ -117,11 +121,13 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
             }
         }
     }
-    
-    public func patchItem(path: String,
-                          parameters: [String: any Codable],
-                          needAuthToken: Bool = true) async throws -> T {
-        
+
+    public func patchItem(
+        path: String,
+        parameters: [String: any Codable],
+        needAuthToken: Bool = true
+    ) async throws -> T {
+
         guard Connectivity.isConnectedToInternet else {
             throw CustomError.noInternet
         }
@@ -152,18 +158,22 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
         }
     }
     
-    public func putItem(path: String,
-                        parameters: [String: any Codable],
-                        needAuthToken: Bool = true) async throws -> T {
-        
+    public func putItem(
+        path: String,
+        parameters: [String: any Codable],
+        needAuthToken: Bool = true
+    ) async throws -> T {
         guard Connectivity.isConnectedToInternet else {
             throw CustomError.noInternet
         }
-        
-        let request = try createPostRequest(from: path,
-                                            method: .put,
-                                            parameters: parameters,
-                                            needAuthToken: needAuthToken)
+
+        let request = try createPostRequest(
+            from: path,
+            method: .put,
+            parameters: parameters,
+            needAuthToken: needAuthToken
+        )
+
         do {
             let result = try await URLSession.shared.data(for: request)
             DADebugLogger.log(data: result.0, response: result.1, error: nil)
@@ -185,8 +195,10 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
         }
     }
     
-    public func deleteItem(path: String,
-                           needAuthToken: Bool = true) async throws -> T {
+    public func deleteItem(
+        path: String,
+        needAuthToken: Bool = true
+    ) async throws -> T {
         guard Connectivity.isConnectedToInternet else {
             throw CustomError.noInternet
         }
@@ -216,16 +228,18 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
         }
     }
     
-    public func postImage(path: String,
-                          imageDatas: [String: [Data]],
-                          additionData: [String: any Codable],
-                          needAuthToken: Bool = true) async throws -> T {
+    public func postImage(
+        path: String,
+        imageDatas: [String: [Data]],
+        additionData: [String: any Codable],
+        needAuthToken: Bool = true
+    ) async throws -> T {
         guard Connectivity.isConnectedToInternet else {
             throw CustomError.noInternet
         }
-        
+
         let url = try createUrl(from: path)
-        
+
         var header = HTTPHeaders()
         
         if needAuthToken {
@@ -310,9 +324,9 @@ extension ApiRepository {
         }
     }
     
-    private func decode<T: Codable>(from data: Data) throws -> T {
+    private func decode<Obj: Codable>(from data: Data) throws -> Obj {
         do {
-            let decodedObject = try JSONDecoder().decode(T.self, from: data)
+            let decodedObject = try JSONDecoder().decode(Obj.self, from: data)
             return decodedObject
         } catch let DecodingError.dataCorrupted(context) {
             throw CustomError.customError("\(context.debugDescription) at \(context.codingPath)")
@@ -327,23 +341,15 @@ extension ApiRepository {
         }
     }
     
-    private func createGetRequest(from path: String,
-                                  method: HTTPMethod,
-                                  param: [String: any Codable],
-                                  needAuthToken: Bool) throws -> URLRequest {
-        
-        var components = URLComponents()
-        components.scheme = scheme
-        components.host = endPoint
-        components.path = path
-        
-        components.queryItems = param
-            .map { URLQueryItem(name: $0.key, value: "\($0.value)") }
-        
-        guard let safeURL = components.url else {
-            throw CustomError.badData
-        }
-        
+    private func createGetRequest(
+        from path: String,
+        method: HTTPMethod,
+        param: [String: any Codable],
+        needAuthToken: Bool
+    ) throws -> URLRequest {
+
+        let safeURL = try createUrl(from: path, params: param)
+
         // Form the URL request
         var request = URLRequest(url: safeURL, timeoutInterval: 20.0)
         
@@ -362,35 +368,28 @@ extension ApiRepository {
         // Return the result
         return request
     }
-    
-    private func createPostRequest(from path: String,
-                                   method: HTTPMethod,
-                                   parameters: [String: any Codable],
-                                   needAuthToken: Bool) throws -> URLRequest {
-        
-        var components = URLComponents()
-        components.scheme = scheme
-        components.host = endPoint
-        components.path = path
-        
-        
-        guard let safeURL = components.url else {
-            throw CustomError.badData
-        }
-        
+
+    private func createPostRequest(
+        from path: String,
+        method: HTTPMethod,
+        parameters: [String: any Codable],
+        needAuthToken: Bool
+    ) throws -> URLRequest {
+        let safeURL = try createUrl(from: path)
+
         // Form the URL request
         var request = URLRequest(url: safeURL, timeoutInterval: 20.0)
-        
-        
+
+
         if let parameters = parameters.jsonString() {
             request.addData(jsonString: parameters)
         }
-        
+
         // Specify the http method and allow JSON returns
         request.httpMethod = method.rawValue
         request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Accept")
-        
+
         // Add the authorization token if provided
         if needAuthToken {
             if let authToken = try KeychainManager.shared.retrieveToken() {
@@ -402,19 +401,14 @@ extension ApiRepository {
         return request
     }
     
-    private func createRequest(from path: String,
-                               method: HTTPMethod,
-                               needAuthToken: Bool) throws -> URLRequest {
-        
-        var components = URLComponents()
-        components.scheme = scheme
-        components.host = endPoint
-        components.path = path
-        
-        guard let safeURL = components.url else {
-            throw CustomError.badData
-        }
-        
+    private func createRequest(
+        from path: String,
+        method: HTTPMethod,
+        needAuthToken: Bool
+    ) throws -> URLRequest {
+
+        let safeURL = try createUrl(from: path)
+
         // Form the URL request
         var request = URLRequest(url: safeURL, timeoutInterval: 20.0)
         
@@ -435,13 +429,24 @@ extension ApiRepository {
         return request
     }
     
-    func createUrl(from path: String) throws -> URL {
-        var components = URLComponents()
-        components.scheme = scheme
-        components.host = endPoint
-        components.path = path
-        
-        guard let safeURL = components.url else {
+    func createUrl(from path: String, params: [String: any Codable] = [:]) throws -> URL {
+        var components: URLComponents?
+
+        if scheme.isEmpty {
+            components = URLComponents(string: path)
+        } else {
+            components = URLComponents()
+            components?.scheme = scheme
+            components?.host = endPoint
+            components?.path = path
+        }
+
+        if !params.isEmpty {
+            components?.queryItems = params
+                .map { URLQueryItem(name: $0.key, value: "\($0.value)") }
+        }
+
+        guard let safeURL = components?.url else {
             throw CustomError.badData
         }
         
