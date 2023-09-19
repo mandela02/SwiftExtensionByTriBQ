@@ -57,19 +57,20 @@ public struct DefaultChoiceAlertView: View {
         VStack(spacing: 0) {
             image
                 .resizable()
-                .scaledToFill()
+                .scaledToFit()
                 .frame(width: 130, height: 130)
                 .padding(.bottom, 16)
                 .padding(.top, 20)
-            
+
             Text(title)
                 .font(titleFont)
                 .padding(.bottom, 5)
-            
+
             Text(description)
                 .font(descriptionFont)
                 .padding(.bottom, 23)
-            
+                .padding(.horizontal, 20)
+
             Divider()
             
             HStack(spacing: 0) {
@@ -102,5 +103,6 @@ public struct DefaultChoiceAlertView: View {
         .foregroundColor(foregroundColor)
         .background(backgroundColor
             .clipShape(RoundedRectangle(cornerRadius: 14)))
+        .padding(.horizontal, 20)
     }
 }

@@ -51,7 +51,7 @@ public struct DefaultAlertView: View {
         VStack(spacing: 0) {
             image
                 .resizable()
-                .scaledToFill()
+                .scaledToFit()
                 .frame(width: 130, height: 130)
                 .padding(.bottom, 16)
                 .padding(.top, 20)

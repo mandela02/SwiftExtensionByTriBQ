@@ -44,6 +44,78 @@ public extension View {
     func backgroundColor(_ color: Color) -> some View {
         self.background(color)
     }
+
+    @ViewBuilder
+    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
+        clipShape(RoundedCorner(radius: radius, corners: corners))
+    }
+
+    @ViewBuilder
+    func clearListCell() -> some View {
+        self
+            .listRowSeparatorTint(.clear)
+            .listRowBackground(Color.clear)
+            .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+    }
+
+    @ViewBuilder
+    func navigationBar<Content: View>(child: Content) -> some View {
+        VStack(spacing: 0) {
+            child
+                .frame(maxWidth: .infinity)
+
+            self
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+
+    @ViewBuilder
+    var plainButton: some View {
+        self.buttonStyle(PlainButtonStyle())
+    }
+
+    var uiView: UIView {
+        let view = UIHostingController(rootView: self).view
+        return view ?? UIView()
+    }
+
+    @ViewBuilder
+    func strikeThrought(color: Color) -> some View {
+        ZStack {
+            self
+
+            color
+                .frame(height: 2)
+        }
+        .fixedSize(horizontal: true, vertical: true)
+    }
+
+    @ViewBuilder
+    func readSize(onChange: @escaping (CGSize) -> Void) -> some View {
+        self.background(
+            GeometryReader { geometryProxy in
+                Color.clear
+                    .preference(key: ViewSizePreferenceKey.self, value: geometryProxy.size)
+            }
+        )
+        .onPreferenceChange(ViewSizePreferenceKey.self, perform: onChange)
+    }
+
+    @ViewBuilder
+    func blurBackground() -> some View {
+        self.background(
+            Color.black
+                .ignoresSafeArea()
+                .opacity(0.8)
+                .background(
+                    .ultraThinMaterial
+                )
+        )
+    }
+
+    func setBackgroundList() -> some View {
+        self.modifier(ListBackgroundModifier())
+    }
 }
 
 public extension View {
@@ -66,5 +138,26 @@ public extension View {
             NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification),
             perform: { _ in f() }
         )
+    }
+}
+
+private struct ViewSizePreferenceKey: PreferenceKey {
+  static var defaultValue: CGSize = .zero
+  static func reduce(value: inout CGSize, nextValue: () -> CGSize) {}
+}
+
+struct RoundedCorner: Shape {
+    init(radius: CGFloat = .infinity,
+                corners: UIRectCorner = .allCorners) {
+        self.radius = radius
+        self.corners = corners
+    }
+
+    private var radius: CGFloat
+    private var corners: UIRectCorner
+
+    func path(in rect: CGRect) -> Path {
+        let path = UIBezierPath(roundedRect: rect, byRoundingCorners: corners, cornerRadii: CGSize(width: radius, height: radius))
+        return Path(path.cgPath)
     }
 }
