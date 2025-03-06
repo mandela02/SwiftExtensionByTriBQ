@@ -265,7 +265,16 @@ extension UIAlertController {
         
         actionSheet.addAction(cancelAlertAction)
         
-        UIApplication.topViewController()?.present(actionSheet, animated: true, completion: nil)
+        if let topViewController = UIApplication.topViewController() {
+            if let popoverController = actionSheet.popoverPresentationController {
+                popoverController.sourceView = topViewController.view
+                popoverController.sourceRect = CGRect(x: topViewController.view.bounds.midX, y: topViewController.view.bounds.midY, width: 0, height: 0)
+                popoverController.permittedArrowDirections = []
+            }
+            
+            topViewController.present(actionSheet, animated: true, completion: nil)
+        }
+
     }
 }
 
@@ -303,7 +312,7 @@ public protocol WindowDetector {
     var window: UIWindow? { get set }
 }
 
-extension PHAsset {
+public extension PHAsset {
     func getImage(completionHandler: @escaping (UIImage?) -> Void) {
         let imageManager = PHCachingImageManager()
         

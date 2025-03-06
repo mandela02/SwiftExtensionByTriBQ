@@ -10,6 +10,7 @@ import os
 
 struct DADebugLogger {
     static func log(request: URLRequest) {
+#if DEBUG
         let urlString = request.url?.absoluteString ?? ""
         let components = NSURLComponents(string: urlString)
 
@@ -33,10 +34,11 @@ struct DADebugLogger {
 
         requestLog += "\n------------------------->\n";
         print("\(requestLog)")
+#endif
     }
 
     static  func log(data: Data?, response: URLResponse?, error: Error?) {
-
+#if DEBUG
         let response = response as? HTTPURLResponse
         
         let urlString = response?.url?.absoluteString
@@ -68,14 +70,14 @@ struct DADebugLogger {
            let prettyPrintedString = NSString(data: preatyData, encoding: String.Encoding.utf8.rawValue) {
             responseLog += "\n\(prettyPrintedString)\n"
         }
-        
-        
-        if let error = error{
-            responseLog += "\nError: \(error.localizedDescription)\n"
+
+        if let error = error {
+            responseLog += "\nError: \(error)\n"
         }
         
         responseLog += "<------------------------\n";
         print("\(responseLog)")
+#endif
     }
 }
 

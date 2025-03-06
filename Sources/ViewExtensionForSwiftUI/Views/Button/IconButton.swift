@@ -29,7 +29,7 @@ public struct IconButton: View {
                 icon
                     .resizable()
                     .scaledToFit()
-                    .frame(maxWidth: .infinity)
+                    .frame(width: size.width, height: size.height, alignment: .center)
             }
         })
         .frame(width: size.width, height: size.height, alignment: .center)

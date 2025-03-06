@@ -45,46 +45,6 @@ public extension Date {
             return "\(dayCount)"
         }
     }
-
-    var getMonthDayHourString: String {
-        let formatter = DateFormatter()
-        formatter.locale = .usLocale
-        formatter.amSymbol = "AM"
-        formatter.pmSymbol = "PM"
-        formatter.dateFormat = "MMMM dd, hh:mm:ss a "
-        return formatter.string(from: self)
-    }
-    
-    var getDayMonthYearString: String {
-        let formatter = DateFormatter()
-        formatter.locale = .usLocale
-        formatter.dateFormat = "dd-MMMM-yyyy"
-        return formatter.string(from: self)
-    }
-
-    var getHourString: String {
-        let formatter = DateFormatter()
-        formatter.locale = .usLocale
-        formatter.amSymbol = "AM"
-        formatter.pmSymbol = "PM"
-        formatter.dateFormat = "hh:mm a "
-        return formatter.string(from: self)
-    }
-    
-    var getMonthDayYearString: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter.string(from: self)
-    }
-
-    var getDayAndHour: String {
-        let formatter = DateFormatter()
-        formatter.locale = .usLocale
-        formatter.amSymbol = "AM"
-        formatter.pmSymbol = "PM"
-        formatter.dateFormat = "d MMM hh:mm a "
-        return formatter.string(from: self)
-    }
 }
 
 public extension Date {
@@ -271,30 +231,6 @@ public extension Date {
     func setTime(hour: Int, minutes: Int) -> Date? {
         return Calendar.gregorian.date(bySettingHour: hour, minute: minutes, second: 0, of: self)
     }
-        
-    var monthYearString: String {
-        let formatter = DateFormatter(dateFormat: "MMMM/y")
-        formatter.locale = .usLocale
-        return formatter.string(from: self)
-    }
-    
-    var dayMonthYearHourMinuteString: String {
-        let formatter = DateFormatter(dateFormat: "d/M/y HH:mm")
-        formatter.locale = .usLocale
-        return formatter.string(from: self)
-    }
-    
-    var dayMonthYearDayOfWeekString: String {
-        let formatter = DateFormatter(dateFormat: "d/M/y (EEEE)")
-        formatter.locale = .usLocale
-        return formatter.string(from: self)
-    }
-    
-    var dayMonthYearString: String {
-        let formatter = DateFormatter(dateFormat: "d MMMM y")
-        formatter.locale = .usLocale
-        return formatter.string(from: self)
-    }
 }
 
 public extension Date {
@@ -373,6 +309,71 @@ public extension Date {
 
     var monthDayYear: String {
         let formatter = DateFormatter(dateFormat: "MM/dd/yyyy")
+        formatter.locale = .usLocale
+        return formatter.string(from: self)
+    }
+
+
+    var getMonthDayHourString: String {
+        let formatter = DateFormatter()
+        formatter.locale = .usLocale
+        formatter.amSymbol = "AM"
+        formatter.pmSymbol = "PM"
+        formatter.dateFormat = "MMMM dd, hh:mm:ss a "
+        return formatter.string(from: self)
+    }
+
+    var getDayMonthYearString: String {
+        let formatter = DateFormatter()
+        formatter.locale = .usLocale
+        formatter.dateFormat = "dd-MMMM-yyyy"
+        return formatter.string(from: self)
+    }
+
+    var getHourString: String {
+        let formatter = DateFormatter()
+        formatter.locale = .usLocale
+        formatter.amSymbol = "AM"
+        formatter.pmSymbol = "PM"
+        formatter.dateFormat = "hh:mm a "
+        return formatter.string(from: self)
+    }
+
+    var getMonthDayYearString: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: self)
+    }
+
+    var getDayAndHour: String {
+        let formatter = DateFormatter()
+        formatter.locale = .usLocale
+        formatter.amSymbol = "AM"
+        formatter.pmSymbol = "PM"
+        formatter.dateFormat = "d MMM hh:mm a "
+        return formatter.string(from: self)
+    }
+
+    var monthYearString: String {
+        let formatter = DateFormatter(dateFormat: "MMMM/y")
+        formatter.locale = .usLocale
+        return formatter.string(from: self)
+    }
+
+    var dayMonthYearHourMinuteString: String {
+        let formatter = DateFormatter(dateFormat: "d/M/y HH:mm")
+        formatter.locale = .usLocale
+        return formatter.string(from: self)
+    }
+
+    var dayMonthYearDayOfWeekString: String {
+        let formatter = DateFormatter(dateFormat: "d/M/y (EEEE)")
+        formatter.locale = .usLocale
+        return formatter.string(from: self)
+    }
+
+    var dayMonthYearString: String {
+        let formatter = DateFormatter(dateFormat: "d MMMM y")
         formatter.locale = .usLocale
         return formatter.string(from: self)
     }

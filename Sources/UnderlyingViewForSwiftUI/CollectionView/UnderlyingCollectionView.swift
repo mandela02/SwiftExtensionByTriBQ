@@ -9,25 +9,27 @@ import SwiftUI
 
 public struct UnderlyingCollectionView: UIViewRepresentable {
     
-    public init(data: [any GenericSection] = [],
-                layout: UICollectionViewLayout? = nil,
-                scrollDirection: Binding<GenericScrollDirection> = .constant(.down),
-                reloadTrigger: Binding<Bool> = .constant(false),
-                onRefesh: (() async -> Void)? = nil,
-                onReachEnd: (() async -> Void)? = nil,
-                calculateSizeForCell: @escaping (UICollectionView, IndexPath) -> CGSize,
-                buildCellForItem: @escaping (UICollectionView, IndexPath) -> UICollectionViewCell,
-                edgeInset: ((Int) -> UIEdgeInsets)? = nil,
-                spacing: ((Int) -> CGFloat)? = nil,
-                buildHeader: ((UICollectionView, IndexPath) -> UICollectionReusableView)? = nil,
-                buildFooter: ((UICollectionView, IndexPath) -> UICollectionReusableView)? = nil,
-                sizeForHeader: ((UICollectionView, Int) -> CGSize)? = nil,
-                sizeForFooter: ((UICollectionView, Int) -> CGSize)? = nil,
-                willDisplay: ((UICollectionView, UICollectionViewCell, IndexPath ) -> Void)? = nil,
-                didEndDisplay: ((UICollectionView, UICollectionViewCell, IndexPath ) -> Void)? = nil,
-                didSelectItem: ((UICollectionView, IndexPath) -> Void)? = nil,
-                extraSetting: ((UICollectionView) -> Void)?) {
-        
+    public init(
+        data: [any GenericSection] = [],
+        layout: UICollectionViewLayout? = nil,
+        scrollDirection: Binding<GenericScrollDirection> = .constant(.down),
+        reloadTrigger: Binding<Bool> = .constant(false),
+        onRefesh: (() async -> Void)? = nil,
+        onReachEnd: (() async -> Void)? = nil,
+        calculateSizeForCell: @escaping (UICollectionView, IndexPath) -> CGSize,
+        buildCellForItem: @escaping (UICollectionView, IndexPath) -> UICollectionViewCell,
+        edgeInset: ((Int) -> UIEdgeInsets)? = nil,
+        spacing: ((Int) -> CGFloat)? = nil,
+        buildHeader: ((UICollectionView, IndexPath) -> UICollectionReusableView)? = nil,
+        buildFooter: ((UICollectionView, IndexPath) -> UICollectionReusableView)? = nil,
+        sizeForHeader: ((UICollectionView, Int) -> CGSize)? = nil,
+        sizeForFooter: ((UICollectionView, Int) -> CGSize)? = nil,
+        willDisplay: ((UICollectionView, UICollectionViewCell, IndexPath ) -> Void)? = nil,
+        didEndDisplay: ((UICollectionView, UICollectionViewCell, IndexPath ) -> Void)? = nil,
+        didSelectItem: ((UICollectionView, IndexPath) -> Void)? = nil,
+        extraSetting: ((UICollectionView) -> Void)?
+    ) {
+
         self._scrollDirection = scrollDirection
         self._reloadTrigger = reloadTrigger
         self.data = data

@@ -8,14 +8,15 @@
 import Foundation
 import Alamofire
 
-struct Connectivity {
-  static let sharedInstance = NetworkReachabilityManager()
-    
-  static var isConnectedToInternet:Bool {
-      if let sharedInstance = sharedInstance {
-          return sharedInstance.isReachable
-      }
-      return false
+actor Connectivity {
+    public static let shared = Connectivity()
+    private init() { }
+    let sharedInstance = NetworkReachabilityManager()
+
+    var isConnectedToInternet: Bool {
+        if let sharedInstance = sharedInstance {
+            return sharedInstance.isReachable
+        }
+        return false
     }
 }
-

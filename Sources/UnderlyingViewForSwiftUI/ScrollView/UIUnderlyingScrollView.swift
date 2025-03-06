@@ -14,27 +14,31 @@ public enum DirectionX {
 }
 
 public struct UnderlyingScrollView<Content: View>: UIViewControllerRepresentable {
+    public typealias AsyncVoidCallback = () async -> Void
+
     private var content: () -> Content
     private var axis: DirectionX
     private var hideScrollIndicators: Bool
+    private var onRefresh: AsyncVoidCallback?
     private let onReachBottom: (() -> Void)?
     
     @Binding
     private var shouldScrollToBottom: Bool
 
-    @Environment(\.refresh)
-    private var action
+    public init(
+        axis: DirectionX = .vertical,
+        hideScrollIndicators: Bool = false,
+        shouldScrollToBottom: Binding<Bool> = .constant(false),
+        onReachBottom: (() -> Void)? = nil,
+        onRefresh: AsyncVoidCallback? = nil,
+        @ViewBuilder content: @escaping () -> Content
+    ) {
 
-    public init(axis: DirectionX = .vertical,
-                hideScrollIndicators: Bool = false,
-                shouldScrollToBottom: Binding<Bool> = .constant(false),
-                onReachBottom: (() -> Void)? = nil,
-                @ViewBuilder content: @escaping () -> Content) {
-        
         self.content = content
         self.hideScrollIndicators = hideScrollIndicators
         self.axis = axis
         self._shouldScrollToBottom = shouldScrollToBottom
+        self.onRefresh = onRefresh
         self.onReachBottom = onReachBottom
     }
     
@@ -42,11 +46,11 @@ public struct UnderlyingScrollView<Content: View>: UIViewControllerRepresentable
         let vc = UIScrollViewController(rootView: self.content())
         vc.axis = axis
         vc.hideScrollIndicators = hideScrollIndicators
-        vc.hideRefreshControl = action == nil
+        vc.hideRefreshControl = onRefresh == nil
         vc.onRefreshing = {
             { control in
                 Task { @MainActor in
-                    await action?()
+                    await onRefresh?()
                     control.endRefreshing()
                 }
             }

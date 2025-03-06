@@ -8,37 +8,43 @@
 import Foundation
 import Alamofire
 
-public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
+public struct ApiRepository<T: Codable>: ApiRepositoryProtocol {
     private let endPoint: String
-    
-    private let scheme: String = "https"
-    
-    public init(_ endPoint: String = "") {
+    private let scheme: String
+
+    public init(
+        _ endPoint: String = "",
+        scheme: String = "https"
+    ) {
         self.endPoint = endPoint
+        self.scheme = scheme
     }
-    
+
     public func fetchItem(
         path: String,
         param: [String: any Codable],
         needAuthToken: Bool = true
     ) async throws -> T {
-        guard Connectivity.isConnectedToInternet else {
+        guard await Connectivity.shared.isConnectedToInternet else {
             throw CustomError.noInternet
         }
-        
-        let request = try createGetRequest(from: path,
-                                           method: .get,
-                                           param: param,
-                                           needAuthToken: needAuthToken)
+
+        let request = try createGetRequest(
+            from: path,
+            method: .get,
+            param: param,
+            needAuthToken: needAuthToken
+        )
+
         do {
             let result = try await URLSession.shared.data(for: request)
             DADebugLogger.log(data: result.0, response: result.1, error: nil)
 
             let response = result.1
             let data = result.0
-            
+
             try handleStatusCode(from: response)
-            
+
             let decodedObject: T = try decode(from: data)
             return decodedObject
         } catch let error {
@@ -51,30 +57,32 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
             }
         }
     }
-    
+
     public func fetchItems(
         path: String,
         param: [String: any Codable],
         needAuthToken: Bool = true
     ) async throws -> [T] {
 
-        guard Connectivity.isConnectedToInternet else {
+        guard await Connectivity.shared.isConnectedToInternet else {
             throw CustomError.noInternet
         }
-        
-        let request = try createGetRequest(from: path,
-                                           method: .get,
-                                           param: param,
-                                           needAuthToken: needAuthToken)
+
+        let request = try createGetRequest(
+            from: path,
+            method: .get,
+            param: param,
+            needAuthToken: needAuthToken
+        )
         do {
             let result = try await URLSession.shared.data(for: request)
             DADebugLogger.log(data: result.0, response: result.1, error: nil)
 
             let response = result.1
             let data = result.0
-            
+
             try handleStatusCode(from: response)
-            
+
             let decodedObject: [T] = try decode(from: data)
             return decodedObject
         } catch let error {
@@ -86,17 +94,17 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
             }
         }
     }
-    
+
     public func postItem(
         path: String,
         parameters: [String: any Codable],
         needAuthToken: Bool = true
     ) async throws -> T {
 
-        guard Connectivity.isConnectedToInternet else {
+        guard await Connectivity.shared.isConnectedToInternet else {
             throw CustomError.noInternet
         }
-        
+
         let request = try createPostRequest(from: path,
                                             method: .post,
                                             parameters: parameters,
@@ -107,9 +115,9 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
 
             let response = result.1
             let data = result.0
-            
+
             try handleStatusCode(from: response)
-            
+
             let decodedObject: T = try decode(from: data)
             return decodedObject
         } catch let error {
@@ -128,10 +136,10 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
         needAuthToken: Bool = true
     ) async throws -> T {
 
-        guard Connectivity.isConnectedToInternet else {
+        guard await Connectivity.shared.isConnectedToInternet else {
             throw CustomError.noInternet
         }
-        
+
         let request = try createPostRequest(from: path,
                                             method: .patch,
                                             parameters: parameters,
@@ -139,12 +147,12 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
         do {
             let result = try await URLSession.shared.data(for: request)
             DADebugLogger.log(data: result.0, response: result.1, error: nil)
-            
+
             let response = result.1
             let data = result.0
-            
+
             try handleStatusCode(from: response)
-            
+
             let decodedObject: T = try decode(from: data)
             return decodedObject
         } catch let error {
@@ -157,13 +165,13 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
             }
         }
     }
-    
+
     public func putItem(
         path: String,
         parameters: [String: any Codable],
         needAuthToken: Bool = true
     ) async throws -> T {
-        guard Connectivity.isConnectedToInternet else {
+        guard await Connectivity.shared.isConnectedToInternet else {
             throw CustomError.noInternet
         }
 
@@ -180,9 +188,9 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
 
             let response = result.1
             let data = result.0
-            
+
             try handleStatusCode(from: response)
-            
+
             let decodedObject: T = try decode(from: data)
             return decodedObject
         } catch let error {
@@ -194,28 +202,32 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
             }
         }
     }
-    
+
     public func deleteItem(
         path: String,
+        parameters: [String: any Codable],
         needAuthToken: Bool = true
     ) async throws -> T {
-        guard Connectivity.isConnectedToInternet else {
+        guard await Connectivity.shared.isConnectedToInternet else {
             throw CustomError.noInternet
         }
-        
-        let request = try createRequest(from: path,
-                                        method: .delete,
-                                        needAuthToken: needAuthToken)
-        
+
+        let request = try createPostRequest(
+            from: path,
+            method: .delete, 
+            parameters: parameters,
+            needAuthToken: needAuthToken
+        )
+
         do {
             let result = try await URLSession.shared.data(for: request)
             DADebugLogger.log(data: result.0, response: result.1, error: nil)
 
             let response = result.1
             let data = result.0
-            
+
             try handleStatusCode(from: response)
-            
+
             let decodedObject: T = try decode(from: data)
             return decodedObject
         } catch let error {
@@ -227,27 +239,27 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
             }
         }
     }
-    
+
     public func postImage(
         path: String,
         imageDatas: [String: [Data]],
         additionData: [String: any Codable],
         needAuthToken: Bool = true
     ) async throws -> T {
-        guard Connectivity.isConnectedToInternet else {
+        guard await Connectivity.shared.isConnectedToInternet else {
             throw CustomError.noInternet
         }
 
         let url = try createUrl(from: path)
 
         var header = HTTPHeaders()
-        
+
         if needAuthToken {
             if let authToken = try KeychainManager.shared.retrieveToken() {
                 header.add(HTTPHeader(name: "Authorization", value: "Bearer \(authToken)"))
             }
         }
-        
+
 
         return try await withCheckedThrowingContinuation({ continuation in
             _ = AF
@@ -260,18 +272,14 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
                                                      mimeType: "image/png")
                         }
                     }
-                    
+
                     for field in additionData {
                         multipartFormData.append("\(field.value)".data(using: .utf8)!,
                                                  withName: field.key)
                     }
-                    
+
                 }, to: url, headers: header)
-                .response(completionHandler: { [weak self] afResponse in
-                    guard let self = self else {
-                        continuation.resume(throwing: CustomError.unknownError)
-                        return
-                    }
+                .response(completionHandler: { afResponse in
                     if let request = afResponse.request {
                         DADebugLogger.log(request: request)
                     }
@@ -291,7 +299,7 @@ public class ApiRepository<T: Codable>: ApiRepositoryProtocol {
                         continuation.resume(throwing: CustomError.badData)
                         return
                     }
-                    
+
                     DADebugLogger.log(data: data, response: response, error: nil)
 
                     do {
@@ -314,16 +322,21 @@ extension ApiRepository {
         guard let statusCode = (response as? HTTPURLResponse)?.statusCode else {
             throw CustomError.serverError
         }
-        
+
         if statusCode == 500 {
             throw CustomError.serverError
         }
-        
+
+        if statusCode == 401 {
+            NotificationCenter.default.post(name: .expiredToken, object: nil)
+            throw CustomError.expiredToken
+        }
+
         if statusCode < 300 {
             return
         }
     }
-    
+
     private func decode<Obj: Codable>(from data: Data) throws -> Obj {
         do {
             let decodedObject = try JSONDecoder().decode(Obj.self, from: data)
@@ -340,7 +353,7 @@ extension ApiRepository {
             throw CustomError.badData
         }
     }
-    
+
     private func createGetRequest(
         from path: String,
         method: HTTPMethod,
@@ -352,12 +365,12 @@ extension ApiRepository {
 
         // Form the URL request
         var request = URLRequest(url: safeURL, timeoutInterval: 20.0)
-        
+
         // Specify the http method and allow JSON returns
         request.httpMethod = method.rawValue
         request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Accept")
-        
+
         // Add the authorization token if provided
         if needAuthToken {
             if let authToken = try KeychainManager.shared.retrieveToken() {
@@ -400,39 +413,11 @@ extension ApiRepository {
         // Return the result
         return request
     }
-    
-    private func createRequest(
-        from path: String,
-        method: HTTPMethod,
-        needAuthToken: Bool
-    ) throws -> URLRequest {
 
-        let safeURL = try createUrl(from: path)
-
-        // Form the URL request
-        var request = URLRequest(url: safeURL, timeoutInterval: 20.0)
-        
-        // Specify the http method and allow JSON returns
-        request.httpMethod = method.rawValue
-        request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
-        request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Accept")
-        
-        // Add the authorization token if provided
-        if needAuthToken {
-            if let authToken = try KeychainManager.shared.retrieveToken() {
-                request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
-            }
-        }
-        
-        DADebugLogger.log(request: request)
-        // Return the result
-        return request
-    }
-    
     func createUrl(from path: String, params: [String: any Codable] = [:]) throws -> URL {
         var components: URLComponents?
 
-        if endPoint.isEmpty {
+        if scheme.isEmpty {
             components = URLComponents(string: path)
         } else {
             components = URLComponents()
@@ -449,7 +434,11 @@ extension ApiRepository {
         guard let safeURL = components?.url else {
             throw CustomError.badData
         }
-        
+
         return safeURL
     }
+}
+
+public extension Notification.Name {
+    static let expiredToken = Notification.Name("INVAID_TOKEN")
 }
