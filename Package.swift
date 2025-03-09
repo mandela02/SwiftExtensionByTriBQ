@@ -26,20 +26,43 @@ let package = Package(
             targets: ["ViewExtensionForSwiftUI"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/Alamofire/Alamofire.git",
-            .upToNextMajor(from: "5.6.1")),
-        .package(url: "https://github.com/marmelroy/PhoneNumberKit",
-            .upToNextMajor(from: "3.4.0")),
-        .package(url: "https://github.com/airbnb/lottie-spm.git",
-            .upToNextMajor(from: "4.2.0")),
-        .package(url: "https://github.com/kean/Nuke.git",
-            .upToNextMajor(from: "11.0.0")),
+        .package(
+            url: "https://github.com/Alamofire/Alamofire.git",
+            .upToNextMajor(
+                from: "5.6.1"
+            )
+        ),
+        .package(
+            url: "https://github.com/marmelroy/PhoneNumberKit",
+            .upToNextMajor(
+                from: "3.4.0"
+            )
+        ),
+        .package(
+            url: "https://github.com/airbnb/lottie-spm.git",
+            .upToNextMajor(
+                from: "4.2.0"
+            )
+        ),
+        .package(
+            url: "https://github.com/kean/Nuke.git",
+            .upToNextMajor(
+                from: "11.0.0"
+            )
+        ),
+        .package(
+            url: "https://github.com/pusher/pusher-websocket-swift.git",
+            .upToNextMajor(
+                from: "10.1.0"
+            )
+        ),
     ],
     targets: [
         .target(
             name: "DataLayer",
             dependencies: [
                 .byName(name: "Alamofire"),
+                .product(name: "PusherSwift", package: "pusher-websocket-swift")
             ]
         ),
         .target(
